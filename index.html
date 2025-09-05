@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Attendance Helper — Install</title>
+<style>
+  body{font-family:system-ui,Arial,sans-serif;max-width:800px;margin:36px auto;padding:16px}
+  .hero{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+  .btn {
+    background:#0066ff;color:#fff;padding:10px 14px;border-radius:8px;text-decoration:none;
+    display:inline-block;border:none;cursor:pointer;font-weight:600;
+  }
+  .copybtn{background:#0b7a4a}
+  pre {background:#f6f8fa;padding:12px;border-radius:8px;overflow:auto;font-size:12px}
+  .note{color:#555;font-size:14px;margin-top:8px}
+  footer{margin-top:20px;color:#666;font-size:13px}
+</style>
+</head>
+<body>
+  <h1>Attendance Helper — Install</h1>
+  <div class="hero">
+    <div>
+      <strong>One-click installer (desktop) or copy (mobile)</strong>
+      <p class="note">Open this page on your phone or laptop, follow the instructions below to add the helper to your bookmarks. Then go to <em>Shiksha → My Courses</em> and tap the bookmark to see your attendance overlay.</p>
+    </div>
+
+    <!-- Drag this link to the bookmarks bar on desktop; on mobile long-press → Add Bookmark -->
+    <a id="bookmarklet-link" class="btn" href="javascript:(async()=>{try{let btns=document.querySelectorAll('a[ng-click^=\\'getAttendanceData\\']');if(!btns.length){alert('Open the My Courses page first.');return}let cids=[...btns].map(b=>{let m=b.getAttribute('ng-click').match(/'([^']+)'/);return m?m[1].replace(',',''):null}).filter(Boolean);let roll=(document.body.innerText.match(/\\b\\d{5}\\b/)||[])[0]||prompt('Enter your roll number (5 digits)');if(!roll){alert('Roll number is required.');return}let getOne=cid=>fetch('/secure/studentMyCourseAttendance',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({courseId:cid+',',roll:parseInt(roll,10)})}).then(r=>r.json()).then(d=>{let present=d.presentClasses||0,total=d.totalClasses||0,percent=total?(present/total*100):0,leaves=total?Math.floor(present/0.75-total):0;return{cid,present,total,percent:+percent.toFixed(2),leaves}}).catch(()=>({cid,present:0,total:0,percent:0,leaves:0}));let results=await Promise.all(cids.map(getOne));let old=document.getElementById('att-helper-overlay');if(old)old.remove();let overlay=document.createElement('div');overlay.id='att-helper-overlay';overlay.style='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999999;display:flex;align-items:center;justify-content:center;padding:16px;';let panel=document.createElement('div');panel.style='background:#fff;max-width:520px;width:100%;max-height:80vh;overflow:auto;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.2);padding:16px;font-family:system-ui,Arial,sans-serif';panel.innerHTML=\"<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px'><div style='font-weight:600'>📊 Attendance Helper</div><button id='att-close' style='border:none;background:#eee;padding:6px 10px;border-radius:8px;cursor:pointer'>Close</button></div>\";let table=document.createElement('table');table.style='width:100%;border-collapse:collapse;font-size:14px';table.innerHTML='<thead><tr><th style=\"border-bottom:1px solid #ddd;padding:6px;text-align:left\">Course</th><th style=\"border-bottom:1px solid #ddd;padding:6px\">Attended</th><th style=\"border-bottom:1px solid #ddd;padding:6px\">Total</th><th style=\"border-bottom:1px solid #ddd;padding:6px\">%</th><th style=\"border-bottom:1px solid #ddd;padding:6px\">Leaves</th></tr></thead>';let tbody=document.createElement('tbody');results.forEach(r=>{let tr=document.createElement('tr');if(r.percent<75)tr.style.background='#ffecec';tr.innerHTML=`<td style='padding:6px;border-bottom:1px solid #f0f0f0'>${r.cid}</td><td style='padding:6px;border-bottom:1px solid #f0f0f0;text-align:center'>${r.present}</td><td style='padding:6px;border-bottom:1px solid #f0f0f0;text-align:center'>${r.total}</td><td style='padding:6px;border-bottom:1px solid #f0f0f0;text-align:center'>${r.percent.toFixed(2)}</td><td style='padding:6px;border-bottom:1px solid #f0f0f0;text-align:center'>${r.leaves}</td>`;tbody.appendChild(tr)});table.appendChild(tbody);panel.appendChild(table);overlay.appendChild(panel);document.body.appendChild(overlay);document.getElementById('att-close').onclick=()=>overlay.remove()}catch(e){alert('Attendance Helper error: '+e.message)}})();">📌 Add to bookmarks (desktop: drag | mobile: long-press → Add)</a>
+
+    <div style="margin-top:8px">
+      <button id="copyBtn" class="btn copybtn">Copy bookmarklet (best for mobile)</button>
+      <span style="margin-left:10px;color:#444">— then edit a bookmark and paste into the URL field</span>
+    </div>
+
+    <p class="note">If your browser automatically encodes the bookmark when you paste it (shows %22 etc.), use a laptop to add the bookmark and sync to phone, or use the Copy button on this page to try again.</p>
+
+    <h3>Manual copy (for manual edits)</h3>
+    <p class="note">If you prefer to paste manually, the full bookmarklet is shown below. On mobile, long-press the text → Copy, then edit a bookmark and paste into its URL.</p>
+    <pre id="rawcode" spellcheck="false" style="white-space:pre-wrap;word-break:break-all"></pre>
+
+    <hr/>
+    <div class="note">Share this page link with classmates — they just open it, tap <strong>Add to bookmarks</strong> or press <strong>Copy bookmarklet</strong> and follow the short instructions.</div>
+  </div>
+
+<script>
+  // the same raw bookmarklet (exact same JS as the Add link). we keep it as a string to copy easily.
+  const bookmarklet = "javascript:(async()=>{try{let btns=document.querySelectorAll('a[ng-click^=\\'getAttendanceData\\']');if(!btns.length){alert('Open the My Courses page first.');return}let cids=[...btns].map(b=>{let m=b.getAttribute('ng-click').match(/'([^']+)'/);return m?m[1].replace(',',''):null}).filter(Boolean);let roll=(document.body.innerText.match(/\\b\\d{5}\\b/)||[])[0]||prompt('Enter your roll number (5 digits)');if(!roll){alert('Roll number is required.');return}let getOne=cid=>fetch('/secure/studentMyCourseAttendance',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({courseId:cid+',',roll:parseInt(roll,10)})}).then(r=>r.json()).then(d=>{let present=d.presentClasses||0,total=d.totalClasses||0,percent=total?(present/total*100):0,leaves=total?Math.floor(present/0.75-total):0;return{cid,present,total,percent:+percent.toFixed(2),leaves}}).catch(()=>({cid,present:0,total:0,percent:0,leaves:0}));let results=await Promise.all(cids.map(getOne));let old=document.getElementById('att-helper-overlay');if(old)old.remove();let overlay=document.createElement('div');overlay.id='att-helper-overlay';overlay.style='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999999;display:flex;align-items:center;justify-content:center;padding:16px;';let panel=document.createElement('div');panel.style='background:#fff;max-width:520px;width:100%;max-height:80vh;overflow:auto;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.2);padding:16px;font-family:system-ui,Arial,sans-serif';panel.innerHTML=\"<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px'><div style='font-weight:600'>📊 Attendance Helper</div><button id='att-close' style='border:none;background:#eee;padding:6px 10px;border-radius:8px;cursor:pointer'>Close</button></div>\";let table=document.createElement('table');table.style='width:100%;border-collapse:collapse;font-size:14px';table.innerHTML='<thead><tr><th style=\"border-bottom:1px solid #ddd;padding:6px;text-align:left\">Course</th><th style=\"border-bottom:1px solid #ddd;padding:6px\">Attended</th><th style=\"border-bottom:1px solid #ddd;padding:6px\">Total</th><th style=\"border-bottom:1px solid #ddd;padding:6px\">%</th><th style=\"border-bottom:1px solid #ddd;padding:6px\">Leaves</th></tr></thead>';let tbody=document.createElement('tbody');results.forEach(r=>{let tr=document.createElement('tr');if(r.percent<75)tr.style.background='#ffecec';tr.innerHTML=`<td style='padding:6px;border-bottom:1px solid #f0f0f0'>${r.cid}</td><td style='padding:6px;border-bottom:1px solid #f0f0f0;text-align:center'>${r.present}</td><td style='padding:6px;border-bottom:1px solid #f0f0f0;text-align:center'>${r.total}</td><td style='padding:6px;border-bottom:1px solid #f0f0f0;text-align:center'>${r.percent.toFixed(2)}</td><td style='padding:6px;border-bottom:1px solid #f0f0f0;text-align:center'>${r.leaves}</td>`;tbody.appendChild(tr)});table.appendChild(tbody);panel.appendChild(table);overlay.appendChild(panel);document.body.appendChild(overlay);document.getElementById('att-close').onclick=()=>overlay.remove()}catch(e){alert('Attendance Helper error: '+e.message)}})();";
+
+  // fill visible pre with the raw code for manual copy
+  document.getElementById('rawcode').innerText = bookmarklet;
+
+  document.getElementById('copyBtn').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(bookmarklet);
+      alert('Bookmarklet copied to clipboard. Now edit a bookmark and paste into URL field (mobile: long-press the bookmark → Edit → paste).');
+    } catch (err) {
+      // fallback: show code and instruct manual copy
+      alert('Copy failed. Long-press the code below and copy manually.');
+    }
+  });
+</script>
+
+<footer>
+  <strong>Notes:</strong> If the bookmark becomes URL-encoded after saving (you see %22), try using a laptop to add the bookmark (drag to bookmarks bar) and Chrome/Brave sync to phone. If that’s inconvenient, use the Copy button and paste into bookmark edit field.
+</footer>
+</body>
+</html>
